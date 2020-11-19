@@ -1,0 +1,53 @@
+version: "3.7"
+
+services:
+  blog-api:
+    image: blog-api
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.enjmin-blog-api.entryPoints=https
+      - traefik.http.routers.enjmin-blog-api.rule=Host(`api.blog.enjmin.koltes.digital`)
+      - traefik.http.routers.enjmin-blog-api.service=enjmin-blog-api
+      - traefik.http.routers.enjmin-blog-api.tls.certResolver=basic
+      - traefik.http.services.enjmin-blog-api.loadBalancer.server.port=80
+    networks:
+      - api
+      - db
+      - web
+    restart: always
+  blog-frontend:
+    image: blog-frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.enjmin-blog-frontend.entryPoints=https
+      - traefik.http.routers.enjmin-blog-frontend.rule=Host(`blog.enjmin.koltes.digital`)
+      - traefik.http.routers.enjmin-blog-frontend.service=enjmin-blog-frontend
+      - traefik.http.routers.enjmin-blog-frontend.tls.certResolver=basic
+      - traefik.http.services.enjmin-blog-frontend.loadBalancer.server.port=80
+    networks:
+      - api
+      - web
+    restart: always
+  game:
+    image: game
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.enjmin-game.entryPoints=https
+      - traefik.http.routers.enjmin-game.rule=Host(`game.enjmin.koltes.digital`)
+      - traefik.http.routers.enjmin-game.service=enjmin-game
+      - traefik.http.routers.enjmin-game.tls.certResolver=basic
+      - traefik.http.services.enjmin-game.loadBalancer.server.port=80
+    networks:
+      - web
+    restart: always
+  redis:
+    image: redis:5.0-alpine
+    networks:
+      - db
+    restart: always
+
+networks:
+  api:
+  db:
+  web:
+    external: true

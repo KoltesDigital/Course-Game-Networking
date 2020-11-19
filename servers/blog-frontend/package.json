@@ -1,0 +1,28 @@
+{
+	"private": true,
+	"name": "blog-frontend",
+	"version": "1.0.0",
+	"description": "Blog frontend",
+	"main": "server.js",
+	"scripts": {
+		"dev": "env API_URL=http://localhost:8080 nodemon | bunyan -o short"
+	},
+	"author": "Jonathan Giroux",
+	"license": "MIT",
+	"dependencies": {
+		"bunyan": "^1.8.12",
+		"express": "^4.17.1",
+		"markdown-it": "^10.0.0",
+		"pug": "^2.0.4",
+		"request": "^2.88.0"
+	},
+	"devDependencies": {
+		"errorhandler": "^1.5.1",
+		"eslint": "^6.6.0",
+		"eslint-plugin-import": "^2.18.2",
+		"eslint-plugin-node": "^10.0.0",
+		"eslint-plugin-promise": "^4.2.1",
+		"eslint-plugin-standard": "^4.0.1",
+		"nodemon": "^1.19.4"
+	}
+}

@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "name": "game",
+  "version": "0.0.1",
+  "description": "Game server",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.4"
+  }
+}
