@@ -7,7 +7,7 @@ Given at ENJMIN every year since 2016.
 ## Exercises
 
 1. Player position synchronization / smoothing;
-1. REST API introduction: [visit the blog](https://blog.enjmin.koltes.digital) and [read the API](exercises/blog/Readme.md).
+2. REST API introduction: [visit the blog](https://blog.enjmin.koltes.digital) and [read the API](exercises/blog/Readme.md).
 
 ## License
 

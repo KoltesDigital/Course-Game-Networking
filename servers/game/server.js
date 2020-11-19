@@ -1,25 +1,28 @@
-const app = require('express')();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
+
+const app = express();
+const server = new http.Server(app);
+const io = socketIo(server);
 
 const gameObjectPositionStates = {};
 
-io.on('connection', (socket) => {
+io.on("connection", (socket) => {
 	let gameObjectPositionStatesInRoom;
 	let ownGameObjectPositionStates;
 	let channel = null;
 
-	socket.on('disconnect', () => {
+	socket.on("disconnect", () => {
 		if (!channel) return;
 		for (let gameObjectId in ownGameObjectPositionStates) {
-			io.to(channel).emit('destroy-game-object', socket.id, gameObjectId);
+			io.to(channel).emit("destroy-game-object", socket.id, gameObjectId);
 		}
 		delete gameObjectPositionStatesInRoom[socket.id];
 	});
 
-	socket.on('join', (name) => {
-		if (channel)
-			socket.leave(channel);
+	socket.on("join", (name) => {
+		if (channel) socket.leave(channel);
 
 		if (!name) return;
 
@@ -31,35 +34,53 @@ io.on('connection', (socket) => {
 			gameObjectPositionStatesInRoom = gameObjectPositionStates[channel] = {};
 
 		for (let otherClientId in gameObjectPositionStatesInRoom) {
-			const clientGameObjectPositionStates = gameObjectPositionStatesInRoom[otherClientId];
+			const clientGameObjectPositionStates =
+				gameObjectPositionStatesInRoom[otherClientId];
 			for (let gameObjectId in clientGameObjectPositionStates) {
-				io.to(channel).emit('create-game-object', otherClientId, gameObjectId, clientGameObjectPositionStates[gameObjectId]);
+				socket.emit(
+					"create-game-object",
+					otherClientId,
+					gameObjectId,
+					clientGameObjectPositionStates[gameObjectId]
+				);
 			}
 		}
 
-		ownGameObjectPositionStates = gameObjectPositionStatesInRoom[socket.id] = {};
+		ownGameObjectPositionStates = gameObjectPositionStatesInRoom[
+			socket.id
+		] = {};
 	});
 
-	socket.on('create-game-object', (gameObjectId, positionState) => {
+	socket.on("create-game-object", (gameObjectId, positionState) => {
 		if (!channel) return;
 		ownGameObjectPositionStates[gameObjectId] = positionState;
-		io.to(channel).emit('create-game-object', socket.id, gameObjectId, positionState);
+		io.to(channel).emit(
+			"create-game-object",
+			socket.id,
+			gameObjectId,
+			positionState
+		);
 	});
 
-	socket.on('destroy-game-object', (gameObjectId) => {
+	socket.on("destroy-game-object", (gameObjectId) => {
 		if (!channel) return;
 		delete ownGameObjectPositionStates[gameObjectId];
 
-		io.to(channel).emit('destroy-game-object', socket.id, gameObjectId);
+		io.to(channel).emit("destroy-game-object", socket.id, gameObjectId);
 	});
 
-	socket.on('synchronize-position', (gameObjectId, positionState) => {
+	socket.on("synchronize-position", (gameObjectId, positionState) => {
 		if (!channel) return;
 		ownGameObjectPositionStates[gameObjectId] = positionState;
-		io.to(channel).emit('synchronize-position', socket.id, gameObjectId, positionState);
+		io.to(channel).emit(
+			"synchronize-position",
+			socket.id,
+			gameObjectId,
+			positionState
+		);
 	});
 });
 
-http.listen(80, () => {
-	console.log('listening');
+server.listen(80, () => {
+	console.log("listening");
 });
