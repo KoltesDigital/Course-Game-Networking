@@ -27,6 +27,9 @@ public class NetworkManager : MonoBehaviour
 	private List<SocketIOResponse> destructionMessages = new List<SocketIOResponse>();
 	private List<SocketIOResponse> synchronizationMessages = new List<SocketIOResponse>();
 
+	private object spawnLock = new object();
+	private bool spawn = false;
+
 	private async void OnEnable()
 	{
 		client = new SocketIO(serverUrl, new SocketIOOptions
@@ -36,6 +39,11 @@ public class NetworkManager : MonoBehaviour
 		client.OnConnected += async (sender, e) =>
 		{
 			await client.EmitAsync("join", serverRoomName);
+
+			lock (spawnLock)
+			{
+				spawn = true;
+			}
 		};
 
 		client.On("create-game-object", message =>
@@ -63,13 +71,6 @@ public class NetworkManager : MonoBehaviour
 		});
 
 		await client.ConnectAsync();
-
-		var localPlayer = Instantiate(playerPrefab, playerContainer);
-
-		var localNetworkSynchronization = localPlayer.AddComponent<NetworkSynchronization>();
-		localNetworkSynchronization.networkManager = this;
-
-		localPlayer.AddComponent<MouseFollower>();
 	}
 
 	private async void OnDisable()
@@ -111,7 +112,7 @@ public class NetworkManager : MonoBehaviour
 
 	public void EmitCreateGameObject(string gameObjectId, PositionState positionState)
 	{
-		client?.EmitAsync("create-game-object", gameObjectId, positionState);
+		client.EmitAsync("create-game-object", gameObjectId, positionState);
 	}
 
 	public void EmitDestroyGameObject(string gameObjectId)
@@ -126,6 +127,21 @@ public class NetworkManager : MonoBehaviour
 
 	private void Update()
 	{
+		lock (spawnLock)
+		{
+			if (spawn)
+			{
+				spawn = false;
+
+				var localPlayer = Instantiate(playerPrefab, playerContainer);
+
+				var localNetworkSynchronization = localPlayer.AddComponent<NetworkSynchronization>();
+				localNetworkSynchronization.networkManager = this;
+
+				localPlayer.AddComponent<MouseFollower>();
+			}
+		}
+
 		lock (creationMessages)
 		{
 			foreach (var message in creationMessages)
